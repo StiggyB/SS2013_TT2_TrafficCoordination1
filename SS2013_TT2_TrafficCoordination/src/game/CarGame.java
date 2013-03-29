@@ -6,29 +6,39 @@ import jgame.platform.StdGame;
 
 public class CarGame extends StdGame {
 
-    private static final long serialVersionUID = -6899853102902331390L;
+	private static final long serialVersionUID = -6899853102902331390L;
 
-    public CarGame(JGPoint size) {
-        initEngine(size.x, size.y);
-    }
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		new CarGame(new JGPoint(800,800));
 
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
-        new CarGame(parseSizeArgs(args, 0));
+	}
+	
+	public CarGame() {
+		initEngineApplet(); 
+	}
+	
+	public CarGame(JGPoint size) {
+		initEngine(size.x, size.y);
+	}
 
-    }
+	@Override
+	public void initCanvas() {
+		setCanvasSettings(100, 100, 8, 8, null, JGColor.gray, null);
+	}
 
-    @Override
-    public void initCanvas() {
-        setCanvasSettings(100, 100, 8, 8, null, JGColor.gray, null);
-    }
+	@Override
+	public void initGame() {
+		setFrameRate(35, 2);
+	}
 
-    @Override
-    public void initGame() {
-        // TODO Auto-generated method stub
+	public void doFrame() {
 
-    }
-
+	}
+	
+	public void paintFrame() {
+		
+	}
 }

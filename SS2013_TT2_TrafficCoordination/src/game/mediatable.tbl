@@ -1,8 +1,10 @@
-//name	tileid	colisoinid	file	modificator
+name  tileid  colisoinid  file  modificator
 background			-	0	background.png		-
 
 wostreettile		_	0	wostreettile.png	-
 snstreettile		|	0	wostreettile.png	r
 centerstreettile	#	0	streetcenter.png	-
+emptytile			.	0	null				-
 
-emptytile			.	0	null			-
+ocar				-	0	car.png				u
+scar				-	0	car.png				l

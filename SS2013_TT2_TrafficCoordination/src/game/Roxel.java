@@ -1,11 +1,12 @@
 package game;
 
 public class Roxel {
-    String tileId;
 
-    public Roxel(String tileId) {
-        this.tileId = tileId;
+    int x, y;
+
+    public Roxel(int x, int y) {
+        this.x = x;
+        this.y = y;
     }
-    
 
 }

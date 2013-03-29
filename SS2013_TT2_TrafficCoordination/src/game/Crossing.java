@@ -42,13 +42,13 @@ public class Crossing {
                     tileIds[i] += "."; // no graphics
                 } else if (i == CENTER && j == CENTER) {
                     tileIds[i] += "#"; // crossing
-                    roxels[j][i] = new Roxel("#");
+                    roxels[j][i] = new Roxel(j,i);
                 } else if (i == CENTER) {
                     tileIds[i] += "_"; // street left-right
-                    roxels[j][i] = new Roxel("_");
+                    roxels[j][i] = new Roxel(j,i);
                 } else if (j == CENTER) {
                     tileIds[i] += "|"; // street top-bottom
-                    roxels[j][i] = new Roxel("|");
+                    roxels[j][i] = new Roxel(j,i);
                 }
             }
         }

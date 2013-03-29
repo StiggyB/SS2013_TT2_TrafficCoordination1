@@ -6,20 +6,37 @@ import jgame.JGPoint;
 import jgame.platform.StdGame;
 
 public class CarGame extends StdGame {
-
-    private static final int TILE_SIZE = 64;
     private static final long serialVersionUID = -6899853102902331390L;
+    /**
+     * Pixel length of textures
+     */
+    private static final int TILE_SIZE = 64;
+    /**
+     * X Size of Crossing Grid
+     */
     private static int CROSSINGS_X = 8;
+    /**
+     * Y Size of Crossing Grid
+     */
     private static int CROSSINGS_Y = 4;
-    private static double ratio = (double)CROSSINGS_Y/ (double)CROSSINGS_X; 
+    /**
+     * side ratio for window sizing
+     */
+    private static double ratio = (double)CROSSINGS_Y/ (double)CROSSINGS_X;
+    /**
+     * Crossing array
+     */
     static Crossing[][] crossings;
 
     /**
      * @param args
      */
     public static void main(String[] args) {
+        // Init Game
         new CarGame(new JGPoint(1600, (int)(1600*ratio)));
+        
         crossings = new Crossing[CROSSINGS_X][CROSSINGS_Y];
+        // Initialize Crossings
         for (int i = 0; i < CROSSINGS_Y; i++) {
             for (int j = 0; j < CROSSINGS_X; j++) {
                 crossings[j][i] = new Crossing(j, i);
@@ -47,13 +64,15 @@ public class CarGame extends StdGame {
         setFrameRate(35, 2);
         defineMedia("mediatable.tbl");
         setBGImage("background");
+        // set crossing tiles
         for (int i = 0; i < CROSSINGS_Y; i++) {
             for (int j = 0; j < CROSSINGS_X; j++) {
                 setTiles(crossings[j][i].x, crossings[j][i].y,
                         crossings[j][i].tileIds);
             }
         }
-        for (int i = 0; i < 20; i++) {
+        // create cars
+        for (int i = 0; i < 5; i++) {
             createCar();
         }
     }
@@ -62,21 +81,23 @@ public class CarGame extends StdGame {
         boolean horizontal = false;
         int xPos, yPos;
 
+        // select crossing coordinates
         int startCrossingX = (int) random(0, CROSSINGS_X);
         int startCrossingY = (int) random(0, CROSSINGS_Y);
         double direction = random(0, 1);
         if (direction <= 0.5)
             horizontal = true;
 
+        // in pixels
         xPos = startCrossingX * Crossing.TILEWIDTH * TILE_SIZE;
         yPos = startCrossingY * Crossing.TILEWIDTH * TILE_SIZE;
-
+        // onto the road
         if (horizontal) {
             yPos += (TILE_SIZE * (int) (Crossing.TILEWIDTH / 2));
         } else {
             xPos += (TILE_SIZE * (int) (Crossing.TILEWIDTH / 2));
         }
-
+        // create car
         new Car(xPos, yPos, horizontal);
     }
 
@@ -85,6 +106,10 @@ public class CarGame extends StdGame {
                          // any)
                 0 // object collision ID of objects to move (0 means any)
         );
+        checkCollision(
+                1, // cids of objects that our objects should collide with
+                1  // cids of the objects whose hit() should be called
+            );
     }
 
     public void paintFrame() {
@@ -114,7 +139,7 @@ public class CarGame extends StdGame {
 
         /** Update the object. This method is called by moveObjects. */
         public void move() {
-
+            // wrap position if overflow
             if (x > pfWidth() + 8 && xspeed > 0)
                 x = -8;
             if (x < -8 && xspeed < 0)
@@ -123,10 +148,11 @@ public class CarGame extends StdGame {
                 y = -8;
             if (y < -8 && yspeed < 0)
                 y = pfHeight() + 8;
-
+            // calculate current roxel
             currentRoxelX = roxelX(x);
             currentRoxelY = roxelY(y);
 
+            // check if next step will enter new voxel
             double nextX = x + xspeed;
             double nextY = y + yspeed;
             if (roxelX(nextX) != currentRoxelX) {
@@ -152,11 +178,16 @@ public class CarGame extends StdGame {
                       // (-1 is left-aligned, 0 is centered, 1 is right-aligned)
             );
         }
-
+        
+        public void hit(JGObject obj) {
+            playAudio("crash");
+        }
+        /** calculate current roxel x coordinate from pixel x */
         private int roxelX(double x) {
             return (int) x / TILE_SIZE % (CROSSINGS_X * Crossing.TILEWIDTH);
         }
 
+        /** calculate current roxel y coordinate from pixel y */
         private int roxelY(double y) {
             return (int) y / TILE_SIZE % (CROSSINGS_Y * Crossing.TILEWIDTH);
         }

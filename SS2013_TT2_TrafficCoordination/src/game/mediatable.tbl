@@ -6,5 +6,7 @@ snstreettile		|	0	wostreettile.png	r
 centerstreettile	#	0	streetcenter.png	-
 emptytile			.	0	null				-
 
-ocar				-	0	car.png				u
-scar				-	0	car.png				l
+ocar				-	1	car.png				u
+scar				-	1	car.png				l
+
+crash	car_crash.wav

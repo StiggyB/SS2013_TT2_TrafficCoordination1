@@ -1,2 +1,7 @@
-streettile	-	0	streettile.png	-
-streettile_big	-	0	streettile_big.png	-
+background			-	0	background.png		-
+
+wostreettile		_	0	wostreettile.png	-
+snstreettile		|	0	wostreettile.png	r
+centerstreettile	#	0	streetcenter.png	-
+
+emptytile			.	0	null			-

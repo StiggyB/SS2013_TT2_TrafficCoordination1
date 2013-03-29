@@ -32,6 +32,8 @@ public class CarGame extends StdGame {
 	@Override
 	public void initGame() {
 		setFrameRate(35, 2);
+		defineMedia("mediatable.tbl");
+		setBGImage("streettile_big");
 	}
 
 	public void doFrame() {

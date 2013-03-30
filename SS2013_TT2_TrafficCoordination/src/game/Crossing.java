@@ -1,5 +1,9 @@
 package game;
 
+import org.openspaces.core.GigaSpace;
+
+import spaces.Roxel;
+
 /**
  * One Crossing
  */
@@ -9,21 +13,22 @@ public class Crossing {
     int y;
 
     /** Tiles per Crossing */
-    static int TILEWIDTH = 3;
+    static int TILEWIDTH = 5;
     /** Center Tile */
     private int CENTER = TILEWIDTH / 2;
 
     /** TilesNames for Graphics */
     String[] tileIds;
-    /** RoxelSpace TODO: Has to be global*/
-    Roxel[][] roxels;
 
-    public Crossing(int x, int y) {
+    /** RoxelSpace TODO: Has to be global */
+    // Roxel[][] roxels;
+
+    public Crossing(int x, int y, GigaSpace tuplespace) {
         this.x = x * TILEWIDTH;
         this.y = y * TILEWIDTH;
         this.tileIds = new String[TILEWIDTH];
-        roxels = new Roxel[TILEWIDTH][TILEWIDTH];
-        
+        // roxels = new Roxel[TILEWIDTH][TILEWIDTH];
+
         for (int i = 0; i < TILEWIDTH; i++) {
             tileIds[i] = new String("");
             for (int j = 0; j < TILEWIDTH; j++) {
@@ -33,13 +38,20 @@ public class Crossing {
                     tileIds[i] += "."; // no graphics
                 } else if (i == CENTER && j == CENTER) {
                     tileIds[i] += "#"; // crossing
-                    roxels[j][i] = new Roxel(x+j,y+i);
+                    // roxels[j][i]
+                    Roxel tmp = new Roxel((x * TILEWIDTH) + j, (y * TILEWIDTH)
+                            + i, new String("TODECIDE"), new String("NOCAR"));
+                    tuplespace.write(tmp);
                 } else if (i == CENTER) {
                     tileIds[i] += "_"; // street left-right
-                    roxels[j][i] = new Roxel(x+j,y+i);
+                    Roxel tmp = new Roxel((x * TILEWIDTH) + j, (y * TILEWIDTH)
+                            + i, new String("EAST"), new String("NOCAR"));
+                    tuplespace.write(tmp);
                 } else if (j == CENTER) {
                     tileIds[i] += "|"; // street top-bottom
-                    roxels[j][i] = new Roxel(x+j,y+i);
+                    Roxel tmp = new Roxel((x * TILEWIDTH) + j, (y * TILEWIDTH)
+                            + i, new String("SOUTH"), new String("NOCAR"));
+                    tuplespace.write(tmp);
                 }
             }
         }

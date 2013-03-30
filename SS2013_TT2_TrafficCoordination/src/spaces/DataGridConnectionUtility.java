@@ -57,6 +57,7 @@ public final class DataGridConnectionUtility {
     public static GigaSpace getSpace(String spaceName, int instances,
             int backups) {
         synchronized (instance.mapLock) {
+            System.out.println("Connecting to TupleSpace");
             GigaSpace gigaspace = instance.gigaSpaceMap.get(spaceName);
             if (gigaspace == null) {
                 UrlSpaceConfigurer configurer = new UrlSpaceConfigurer(
@@ -66,6 +67,7 @@ public final class DataGridConnectionUtility {
                 try {
                     space = configurer.space();
                 } catch (CannotFindSpaceException cfse) {
+                    System.out.println("No TupleSpace existing, creating...");
                     Admin admin = new AdminFactory().createAdmin();
                     GridServiceManager esm = admin.getGridServiceManagers()
                             .waitForAtLeastOne();
@@ -81,6 +83,7 @@ public final class DataGridConnectionUtility {
                         .gigaSpace();
                 instance.gigaSpaceMap.put(spaceName, gigaspace);
             }
+            System.out.println("Tuplespace ready");
             return gigaspace;
         }
 

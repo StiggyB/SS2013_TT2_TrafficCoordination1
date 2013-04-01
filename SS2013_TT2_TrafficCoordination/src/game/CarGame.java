@@ -3,6 +3,7 @@ package game;
 import org.openspaces.core.GigaSpace;
 
 import spaces.CompoundId;
+import spaces.Configuration;
 import spaces.DataGridConnectionUtility;
 import spaces.Roxel;
 import jgame.JGColor;
@@ -17,35 +18,32 @@ public class CarGame extends StdGame {
      */
     private static final int TILE_SIZE = 64;
     /**
-     * X Size of Crossing Grid
-     */
-    private static int CROSSINGS_X = 6;
-    /**
-     * Y Size of Crossing Grid
-     */
-    private static int CROSSINGS_Y = 4;
-    /**
      * side ratio for window sizing
      */
-    private static double ratio = (double) CROSSINGS_Y / (double) CROSSINGS_X;
+    private static double ratio = 3;
     /**
      * Crossing array
      */
-    static Crossing[][] crossings;
+    static Block[][] blocks;
 
     GigaSpace tuplespace;
+
+    Configuration conf = null;
+
+    boolean showGrid = false;
 
     /**
      * @param args
      */
     public static void main(String[] args) {
         // Init Game
-        new CarGame(new JGPoint(1000, (int) (1000 * ratio)));
+        new CarGame(new JGPoint((int) (TILE_SIZE * ratio),
+                (int) (TILE_SIZE * ratio)));
 
     }
 
     public CarGame() {
-        tuplespace = DataGridConnectionUtility.getSpace("streetGrid", 1, 1);
+        connect();
 
         initCrossings();
 
@@ -53,30 +51,58 @@ public class CarGame extends StdGame {
     }
 
     public CarGame(JGPoint size) {
-        tuplespace = DataGridConnectionUtility.getSpace("streetGrid", 1, 1);
+        connect();
 
         initCrossings();
 
-        initEngine(size.x, size.y);
+        initEngine(size.x * conf.getBlocksX(), size.y * conf.getBlocksY());
     }
 
     /**
-     * Initializes the graphical representation of the crossing grid
+     * Connects to the data grid and gets the configuration. Exits the
+     * application if no Configuration was found after several retries.
+     */
+    private void connect() {
+        tuplespace = DataGridConnectionUtility.getSpace("streetGrid", 1, 1);
+        int retryCounter = 0;
+        System.out.print("Getting Configuration");
+        while (conf == null) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            conf = tuplespace.readById(Configuration.class, "game1");
+            retryCounter++;
+            System.out.print(".");
+            if (retryCounter > 20) {
+                System.out.println("\nNo Configuration found, exiting!");
+                System.exit(-1);
+            }
+        }
+        System.out.println("\nConfiguration: " + conf.toString());
+
+    }
+
+    /**
+     * Initializes the graphical representation of the block grid
      */
     private void initCrossings() {
-        crossings = new Crossing[CROSSINGS_X][CROSSINGS_Y];
+        blocks = new Block[conf.getBlocksX()][conf.getBlocksY()];
         // Initialize Crossings
-        for (int i = 0; i < CROSSINGS_Y; i++) {
-            for (int j = 0; j < CROSSINGS_X; j++) {
-                crossings[j][i] = new Crossing(j, i, tuplespace);
+        for (int i = 0; i < conf.getBlocksY(); i++) {
+            for (int j = 0; j < conf.getBlocksX(); j++) {
+                blocks[j][i] = new Block(j, i, conf.getBlockRoxelLength(),
+                        tuplespace);
             }
         }
     }
 
     @Override
     public void initCanvas() {
-        setCanvasSettings(Crossing.TILEWIDTH * CROSSINGS_X, Crossing.TILEWIDTH
-                * CROSSINGS_Y, TILE_SIZE, TILE_SIZE, null, JGColor.gray, null);
+        setCanvasSettings(conf.getBlockRoxelLength() * conf.getBlocksX(),
+                conf.getBlockRoxelLength() * conf.getBlocksY(), TILE_SIZE,
+                TILE_SIZE, null, JGColor.gray, null);
     }
 
     @Override
@@ -84,15 +110,14 @@ public class CarGame extends StdGame {
         setFrameRate(30, 2);
         defineMedia("mediatable.tbl");
         setBGImage("background");
-        // set crossing tiles
-        for (int i = 0; i < CROSSINGS_Y; i++) {
-            for (int j = 0; j < CROSSINGS_X; j++) {
-                setTiles(crossings[j][i].x, crossings[j][i].y,
-                        crossings[j][i].tileIds);
+        // set block tiles
+        for (int i = 0; i < conf.getBlocksY(); i++) {
+            for (int j = 0; j < conf.getBlocksX(); j++) {
+                setTiles(blocks[j][i].x, blocks[j][i].y, blocks[j][i].tileIds);
             }
         }
         // // create cars
-        // for (int i = 0; i < 1; i++) {
+        // for (int i = 0; i < 2; i++) {
         // createCar(i);
         // }
     }
@@ -101,21 +126,21 @@ public class CarGame extends StdGame {
         boolean horizontal = false;
         int xPos, yPos;
 
-        // select crossing coordinates
-        int startCrossingX = (int) random(0, CROSSINGS_X);
-        int startCrossingY = (int) random(0, CROSSINGS_Y);
+        // select block coordinates
+        int startCrossingX = (int) random(0, conf.getBlocksX());
+        int startCrossingY = (int) random(0, conf.getBlocksY());
         double direction = random(0, 1);
         if (direction <= 0.5)
             horizontal = true;
 
         // in pixels
-        xPos = startCrossingX * Crossing.TILEWIDTH * TILE_SIZE;
-        yPos = startCrossingY * Crossing.TILEWIDTH * TILE_SIZE;
+        xPos = startCrossingX * conf.getBlockRoxelLength() * TILE_SIZE;
+        yPos = startCrossingY * conf.getBlockRoxelLength() * TILE_SIZE;
         // onto the road
         if (horizontal) {
-            yPos += (TILE_SIZE * (int) (Crossing.TILEWIDTH / 2));
+            yPos += (TILE_SIZE * (int) (conf.getBlockRoxelLength() / 2));
         } else {
-            xPos += (TILE_SIZE * (int) (Crossing.TILEWIDTH / 2));
+            xPos += (TILE_SIZE * (int) (conf.getBlockRoxelLength() / 2));
         }
         // create car
         new Car(id, pfWidth(), pfHeight(), xPos, yPos, horizontal);
@@ -129,6 +154,10 @@ public class CarGame extends StdGame {
             carcnt++;
             clearKey('N');
         }
+        if (getKey('G')) {
+            showGrid = !showGrid;
+            clearKey('G');
+        }
 
         moveObjects(null,// object name prefix of objects to move (null means
                          // any)
@@ -141,11 +170,14 @@ public class CarGame extends StdGame {
     }
 
     public void paintFrame() {
-        setColor(JGColor.black);
-        for (int i = 0; i < CROSSINGS_Y * Crossing.TILEWIDTH; i++) {
-            drawLine(0, i * TILE_SIZE, pfWidth(), i * TILE_SIZE);
-            for (int j = 0; j < CROSSINGS_X * Crossing.TILEWIDTH; j++) {
-                drawLine(j * TILE_SIZE, 0, j * TILE_SIZE, pfHeight());
+        if (showGrid) {
+            setColor(JGColor.black);
+            for (int i = 0; i < conf.getBlocksY() * conf.getBlockRoxelLength(); i++) {
+                drawLine(0, i * TILE_SIZE, pfWidth(), i * TILE_SIZE);
+                for (int j = 0; j < conf.getBlocksX()
+                        * conf.getBlockRoxelLength(); j++) {
+                    drawLine(j * TILE_SIZE, 0, j * TILE_SIZE, pfHeight());
+                }
             }
         }
     }
@@ -158,7 +190,8 @@ public class CarGame extends StdGame {
         int currentRoxelY;
         boolean horizontal;
         int waitcounter = 0;
-        public double maxspeed = 2;
+        public double maxspeed = 3;
+        public double minspeed = 0.5;
 
         JGColor textcolor = JGColor.white;
 
@@ -166,19 +199,21 @@ public class CarGame extends StdGame {
 
         Car(int id, int screenWidth, int screenHeight, int startposx,
                 int startposy, boolean horizontal) {
-            super("car", true, startposx, startposy, 1, null);
+            super("car", true, startposx, (horizontal ? startposy + TILE_SIZE
+                    / 2 : startposy), 1, null);
             this.id = id;
             this.screenWidth = screenWidth;
             this.screenHeight = screenHeight;
             this.currentRoxelX = roxelX(x);
-            this.currentRoxelY = roxelY(y);
+            this.currentRoxelY = roxelY((horizontal ? startposy + TILE_SIZE / 2
+                    : startposy));
             this.horizontal = horizontal;
             // Give the object an initial speed in a random direction.
             if (horizontal) {
-                xspeed = random(0.2, maxspeed);
+                xspeed = random(minspeed, maxspeed);
                 setGraphic("ocar");
             } else {
-                yspeed = random(0.2, maxspeed);
+                yspeed = random(minspeed, maxspeed);
                 setGraphic("scar");
             }
             enterRoxel(currentRoxelX, currentRoxelY);
@@ -186,57 +221,61 @@ public class CarGame extends StdGame {
 
         /** Update the object. This method is called by moveObjects. */
         public void move() {
-            if (waitcounter == 0) {
-                textcolor = JGColor.white;
-                if (horizontal) {
-                    setGraphic("ocar");
-                } else {
-                    setGraphic("scar");
-                }
-                // check if next step will enter new voxel
-                double nextX = x + 5 * xspeed;
-                double nextY = y + 5 * yspeed;
-                if ((roxelX(nextX) != currentRoxelX || roxelY(nextY) != currentRoxelY)
-                        && !isNextRoxelFree(nextX, nextY)) {
-                    xspeed = 0;
-                    yspeed = 0;
-                    waitcounter = 10;
-                } else {
-                    accelerate();
-                }
+            textcolor = JGColor.white;
+            int nextRoxelX, nextRoxelY;
 
-                if (roxelX(x) != currentRoxelX) {
-                    System.out.println(getName() + " has entered roxel "
-                            + roxelX(x) + "," + roxelY(y));
-                    textcolor = JGColor.yellow;
-                    goToRoxel(roxelX(x), roxelY(y));
-                }
-                if (roxelY(y) != currentRoxelY) {
-                    System.out.println(getName() + " has entered roxel "
-                            + roxelX(x) + "," + roxelY(y));
-                    textcolor = JGColor.yellow;
-                    goToRoxel(roxelX(x), roxelY(y));
-                }
+            // wrap position if overflow
+            if (x > screenWidth && xspeed > 0)
+                x = 0;
+            if (x < 0 && xspeed < 0)
+                x = screenWidth;
+            if (y > screenHeight && yspeed > 0)
+                y = 0;
+            if (y < 0 && yspeed < 0)
+                y = screenHeight;
 
-                // wrap position if overflow
-                if (x > screenWidth && xspeed > 0)
-                    x = 0;
-                if (x < 0 && xspeed < 0)
-                    x = screenWidth;
-                if (y > screenHeight && yspeed > 0)
-                    y = 0;
-                if (y < 0 && yspeed < 0)
-                    y = screenHeight;
-
-            } else if (waitcounter < 10) {
-                accelerate();
-
-                waitcounter--;
-            } else {
-                waitcounter--;
-            }
+            int lastRoxelX = currentRoxelX;
+            int lastRoxelY = currentRoxelY;
             currentRoxelX = roxelX(x);
             currentRoxelY = roxelY(y);
+
+            if (horizontal) {
+                setGraphic("ocar");
+                nextRoxelX = (currentRoxelX + 1)
+                        % (conf.getBlocksX() * conf.getBlockRoxelLength());
+                nextRoxelY = currentRoxelY;
+            } else {
+                setGraphic("scar");
+                nextRoxelX = currentRoxelX;
+                nextRoxelY = (currentRoxelY + 1)
+                        % (conf.getBlocksY() * conf.getBlockRoxelLength());
+            }
+
+            if (xspeed == 0 && yspeed == 0) {
+                accelerate();
+            }
+
+            if ((roxelX(x + TILE_SIZE / 2 + 5 * xspeed) >= nextRoxelX)
+                    || (roxelY(y + TILE_SIZE / 2 + 5 * yspeed) >= nextRoxelY)) {
+                if (!isNextRoxelFree(nextRoxelX, nextRoxelY)) {
+                    decelerate();
+                }
+            }
+
+            if ((roxelX(x + TILE_SIZE / 2 + xspeed) == nextRoxelX)
+                    && (roxelX(x + TILE_SIZE / 2) != nextRoxelX)
+                    || (roxelY(y + TILE_SIZE / 2 + yspeed) == nextRoxelY)
+                    && (roxelY(y + TILE_SIZE / 2) != nextRoxelY)) {
+                goToRoxel(nextRoxelX, nextRoxelY);
+            }
+
+            if ((roxelX(x + xspeed) > currentRoxelX)
+                    || ((roxelX(x + xspeed) == 0) && (currentRoxelX != 0))
+                    || (roxelY(y + yspeed) > currentRoxelY)
+                    || ((roxelY(y + yspeed) == 0) && (currentRoxelY != 0))) {
+                leaveRoxel(currentRoxelX, currentRoxelY);
+            }
+
         }
 
         /** Draw the object. */
@@ -245,15 +284,21 @@ public class CarGame extends StdGame {
 
             drawString(getName() + ": " + currentRoxelX + "_" + currentRoxelY,
                     x + TILE_SIZE / 2, y + TILE_SIZE / 10, 0);
+            setColor(JGColor.blue);
+
             drawRect(x, y, 5, 5, true, false);
         }
 
         public void hit(JGObject obj) {
-            if (waitcounter == 0 && (xspeed != 0 || yspeed != 0)) {
-                textcolor = JGColor.red;
-                // playAudio("crash");
-            }
             Car opponent = (Car) obj;
+            // // check if we have just hit somebody
+            // if (waitcounter == 0 && (xspeed != 0 || yspeed != 0)) {
+            // // check if we're actually hitting somebody
+            // if (currentRoxelX == opponent.curr)
+            textcolor = JGColor.red;
+            playAudio("crash");
+            // }
+            //
             if ((xspeed != 0 && opponent.currentRoxelX > currentRoxelX && opponent.currentRoxelY >= currentRoxelY)
                     || (yspeed != 0 && opponent.currentRoxelY > currentRoxelY && opponent.currentRoxelX <= currentRoxelX)) {
                 waitcounter = (int) random(50, 200);
@@ -262,16 +307,24 @@ public class CarGame extends StdGame {
                 } else {
                     setGraphic("scarcrash");
                 }
-                xspeed = 0;
-                yspeed = 0;
-            } else {
-                if (waitcounter == 0) {
-                    waitcounter = 10;
-                }
-                // else {
-                // accelerate();
-                // }
             }
+        }
+
+        private boolean isNextRoxelFree(double nextX, double nextY) {
+            CompoundId nextId = new CompoundId(roxelX(nextX), roxelY(nextY));
+            Roxel template = new Roxel();
+            template.setId(nextId);
+
+            Roxel next = tuplespace.read(template);
+            
+
+            if (next != null) {
+                System.out.println(getName() + " has to brake");
+                return false;
+            } else {
+                System.out.println("Tuple was NULL");
+            }
+            return true;
         }
 
         /**
@@ -279,33 +332,37 @@ public class CarGame extends StdGame {
          */
         private void accelerate() {
             if (horizontal) {
-                if (xspeed < 1)
-                    xspeed += random(0, maxspeed);
+                if (xspeed < maxspeed)
+                    xspeed += random(minspeed, maxspeed);
             } else {
-                if (yspeed < 1)
-                    yspeed += random(0, maxspeed);
+                if (yspeed < maxspeed)
+                    yspeed += random(minspeed, maxspeed);
             }
         }
 
-        private boolean isNextRoxelFree(double nextX, double nextY) {
-            CompoundId nextId = new CompoundId(roxelX(nextX), roxelY(nextY));
-            Roxel next = tuplespace.readById(Roxel.class, nextId);
-            if (next != null && next.getState().equals("NOCAR")) {
-                return true;
+        /**
+         * 
+         */
+        private void decelerate() {
+            if (horizontal) {
+                if (xspeed > 0.5)
+                    xspeed -= random(0.01, 0.5);
+            } else {
+                if (yspeed > 0.5)
+                    yspeed -= random(0.01, 0.5);
             }
-            return false;
         }
 
         /** calculate current roxel x coordinate from pixel x */
         private int roxelX(double x) {
-            return (int) (x + TILE_SIZE - 1) / TILE_SIZE
-                    % (CROSSINGS_X * Crossing.TILEWIDTH);
+            return (int) (x) / TILE_SIZE
+                    % (conf.getBlocksX() * conf.getBlockRoxelLength());
         }
 
         /** calculate current roxel y coordinate from pixel y */
         private int roxelY(double y) {
-            return (int) (y + TILE_SIZE - 1) / TILE_SIZE
-                    % (CROSSINGS_Y * Crossing.TILEWIDTH);
+            return (int) (y) / TILE_SIZE
+                    % (conf.getBlocksY() * conf.getBlockRoxelLength());
         }
 
         private void enterRoxel(int x, int y) {
@@ -313,6 +370,8 @@ public class CarGame extends StdGame {
             // Create Matching Template
             Roxel template = new Roxel();
             template.setId(nextId);
+            template.setX(x);
+            template.setY(y);
             template.setState("NOCAR");
 
             // Aquire next Roxel
@@ -328,13 +387,15 @@ public class CarGame extends StdGame {
         }
 
         private void goToRoxel(int x, int y) {
-            CompoundId actId = new CompoundId(currentRoxelX, currentRoxelY);
             CompoundId nextId = new CompoundId(x, y);
 
-            System.out.println(getName() + " trying to get to Roxel " + nextId);
+            // System.out.println(getName() + " trying to get to Roxel " +
+            // nextId);
             // Create Matching Template
             Roxel template = new Roxel();
             template.setId(nextId);
+            template.setX(x);
+            template.setY(y);
             template.setState("NOCAR");
 
             // Aquire next Roxel
@@ -343,19 +404,34 @@ public class CarGame extends StdGame {
                 if (next.getState().equals("NOCAR")) {
                     next.setState("CAR");
                 }
-                System.out.println(getName() + " NextRoxel: " + nextId + " - "
-                        + next);
+                // System.out.println(getName() + " NextRoxel: " + nextId +
+                // " - "
+                // + next);
                 tuplespace.write(next);
+                // Reset current Roxels state
+
+            } else {
+                xspeed = 0;
+                yspeed = 0;
             }
 
-            // Reset current Roxels state
-            Roxel act = tuplespace.takeById(Roxel.class, actId);
+        }
+
+        private void leaveRoxel(int x, int y) {
+            CompoundId actId = new CompoundId(x, y);
+            Roxel template = new Roxel();
+            template.setId(actId);
+            template.setX(currentRoxelX);
+            template.setY(currentRoxelY);
+            template.setState("CAR");
+            Roxel act = tuplespace.take(template);
+
             if (act != null) {
                 if (act.getState().equals("CAR")) {
                     act.setState("NOCAR");
                 }
-                System.out.println(getName() + " ActRoxel: " + actId + " - "
-                        + act);
+                // System.out.println(getName() + " ActRoxel: " + actId + " - "
+                // + act);
                 tuplespace.write(act);
             }
         }

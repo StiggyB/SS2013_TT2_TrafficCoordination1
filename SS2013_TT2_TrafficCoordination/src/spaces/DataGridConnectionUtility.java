@@ -19,17 +19,16 @@ import org.openspaces.core.space.cache.LocalCacheSpaceConfigurer;
 import com.j_spaces.core.IJSpace;
 
 public final class DataGridConnectionUtility {
-    Map<String, UrlSpaceConfigurer>  configurerMap = new HashMap<String, UrlSpaceConfigurer>();
-    Map<String, GigaSpace>           gigaSpaceMap  = new HashMap<String, GigaSpace>();
+    boolean running = true;
+    Map<String, UrlSpaceConfigurer> configurerMap = new HashMap<String, UrlSpaceConfigurer>();
+    Map<String, GigaSpace> gigaSpaceMap = new HashMap<String, GigaSpace>();
     // Single lock object that guards access to the gigaSpaceMap and the
     // configurerMap
-    final Object                     mapLock       = new Object();
+    final Object mapLock = new Object();
 
-    Logger                           log           = Logger.getLogger(this
-                                                           .getClass()
-                                                           .getName());
+    Logger log = Logger.getLogger(this.getClass().getName());
 
-    static DataGridConnectionUtility instance      = new DataGridConnectionUtility();
+    static DataGridConnectionUtility instance = new DataGridConnectionUtility();
 
     private DataGridConnectionUtility() {
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -40,8 +39,7 @@ public final class DataGridConnectionUtility {
                 // The argument being that we're shutting down now and playtime
                 // is over.
                 synchronized (mapLock) {
-                    for (UrlSpaceConfigurer configurer : configurerMap
-                            .values()) {
+                    for (UrlSpaceConfigurer configurer : configurerMap.values()) {
                         try {
                             log.fine("Shutting down configurer " + configurer);
                             configurer.destroy();
@@ -91,5 +89,9 @@ public final class DataGridConnectionUtility {
 
     public static GigaSpace getSpace(String spaceName) {
         return getSpace(spaceName, 2, 1);
+    }
+
+    public void shutdown() {
+        running = false;
     }
 }

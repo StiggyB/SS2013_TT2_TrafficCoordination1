@@ -39,7 +39,6 @@ public class CarGame extends StdGame {
         // Init Game
         new CarGame(new JGPoint((int) (TILE_SIZE * ratio),
                 (int) (TILE_SIZE * ratio)));
-
     }
 
     public CarGame() {
@@ -182,6 +181,10 @@ public class CarGame extends StdGame {
         }
     }
 
+    public void destroy(){
+        removeObjects("car", 0);
+    }
+    
     class Car extends JGObject {
         int id;
         int screenWidth;
@@ -192,6 +195,7 @@ public class CarGame extends StdGame {
         int waitcounter = 0;
         public double maxspeed = 3;
         public double minspeed = 0.5;
+        int nextRoxelX, nextRoxelY;
 
         JGColor textcolor = JGColor.white;
 
@@ -208,6 +212,8 @@ public class CarGame extends StdGame {
             this.currentRoxelY = roxelY((horizontal ? startposy + TILE_SIZE / 2
                     : startposy));
             this.horizontal = horizontal;
+            enterRoxel(currentRoxelX, currentRoxelY);
+
             // Give the object an initial speed in a random direction.
             if (horizontal) {
                 xspeed = random(minspeed, maxspeed);
@@ -216,13 +222,11 @@ public class CarGame extends StdGame {
                 yspeed = random(minspeed, maxspeed);
                 setGraphic("scar");
             }
-            enterRoxel(currentRoxelX, currentRoxelY);
         }
 
         /** Update the object. This method is called by moveObjects. */
         public void move() {
             textcolor = JGColor.white;
-            int nextRoxelX, nextRoxelY;
 
             // wrap position if overflow
             if (x > screenWidth && xspeed > 0)
@@ -234,8 +238,6 @@ public class CarGame extends StdGame {
             if (y < 0 && yspeed < 0)
                 y = screenHeight;
 
-            int lastRoxelX = currentRoxelX;
-            int lastRoxelY = currentRoxelY;
             currentRoxelX = roxelX(x);
             currentRoxelY = roxelY(y);
 
@@ -322,7 +324,7 @@ public class CarGame extends StdGame {
                 System.out.println(getName() + " has to brake");
                 return false;
             } else {
-                System.out.println("Tuple was NULL");
+//                System.out.println("Tuple was NULL");
             }
             return true;
         }
@@ -375,7 +377,7 @@ public class CarGame extends StdGame {
             template.setState("NOCAR");
 
             // Aquire next Roxel
-            Roxel next = tuplespace.take(template);
+            Roxel next = tuplespace.take(template,1000);
             System.out.println(getName() + " InitialRoxel: " + nextId + " - "
                     + next);
             if (next != null) {
@@ -434,6 +436,11 @@ public class CarGame extends StdGame {
                 // + act);
                 tuplespace.write(act);
             }
+        }
+        
+        public void destroy() {
+            leaveRoxel(currentRoxelX, currentRoxelY);
+            leaveRoxel(nextRoxelX, nextRoxelY);
         }
     }
 

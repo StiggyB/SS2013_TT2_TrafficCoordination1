@@ -39,19 +39,19 @@ public class Block {
                 } else if (i == blockCenter && j == blockCenter) {
                     tileIds[i] += "#"; // crossing
                     // roxels[j][i]
-                    Roxel tmp = new Roxel((x * roxelWidth) + j, (y * roxelWidth)
-                            + i, new String("TODECIDE"), new String("NOCAR"));
-                    tuplespace.write(tmp);
+//                    Roxel tmp = new Roxel((x * roxelWidth) + j, (y * roxelWidth)
+//                            + i, new String("TODECIDE"), new String("NOCAR"));
+//                    tuplespace.write(tmp);
                 } else if (i == blockCenter) {
                     tileIds[i] += "_"; // street left-right
-                    Roxel tmp = new Roxel((x * roxelWidth) + j, (y * roxelWidth)
-                            + i, new String("EAST"), new String("NOCAR"));
-                    tuplespace.write(tmp);
+//                    Roxel tmp = new Roxel((x * roxelWidth) + j, (y * roxelWidth)
+//                            + i, new String("EAST"), new String("NOCAR"));
+//                    tuplespace.write(tmp);
                 } else if (j == blockCenter) {
                     tileIds[i] += "|"; // street top-bottom
-                    Roxel tmp = new Roxel((x * roxelWidth) + j, (y * roxelWidth)
-                            + i, new String("SOUTH"), new String("NOCAR"));
-                    tuplespace.write(tmp);
+//                    Roxel tmp = new Roxel((x * roxelWidth) + j, (y * roxelWidth)
+//                            + i, new String("SOUTH"), new String("NOCAR"));
+//                    tuplespace.write(tmp);
                 }
             }
         }

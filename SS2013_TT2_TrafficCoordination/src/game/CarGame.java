@@ -125,26 +125,49 @@ public class CarGame extends StdGame {
 
     private void createCar(int id) {
         boolean horizontal = false;
-        int xPos, yPos;
+        int xPos = 0, yPos = 0;
+        boolean prettyRoxel = false;
+        int iterationCnt = 0;
+        while (!prettyRoxel && iterationCnt  < 100) {
+            // select block coordinates
+            int startCrossingX = (int) random(0, conf.getBlocksX());
+            int startCrossingY = (int) random(0, conf.getBlocksY());
+            double direction = random(0, 1);
+            if (direction <= 0.5)
+                horizontal = true;
 
-        // select block coordinates
-        int startCrossingX = (int) random(0, conf.getBlocksX());
-        int startCrossingY = (int) random(0, conf.getBlocksY());
-        double direction = random(0, 1);
-        if (direction <= 0.5)
-            horizontal = true;
-
-        // in pixels
-        xPos = startCrossingX * conf.getBlockRoxelLength() * TILE_SIZE;
-        yPos = startCrossingY * conf.getBlockRoxelLength() * TILE_SIZE;
-        // onto the road
-        if (horizontal) {
-            yPos += (TILE_SIZE * (int) (conf.getBlockRoxelLength() / 2));
-        } else {
-            xPos += (TILE_SIZE * (int) (conf.getBlockRoxelLength() / 2));
+            // in pixels
+            xPos = startCrossingX * conf.getBlockRoxelLength() * TILE_SIZE;
+            yPos = startCrossingY * conf.getBlockRoxelLength() * TILE_SIZE;
+            // onto the road
+            if (horizontal) {
+                yPos += (TILE_SIZE * (int) (conf.getBlockRoxelLength() / 2));
+            } else {
+                xPos += (TILE_SIZE * (int) (conf.getBlockRoxelLength() / 2));
+            }
+            prettyRoxel = isRoxelAvailable(roxelX(xPos),
+                    roxelY((horizontal ? yPos + TILE_SIZE / 2 : yPos)));
+            System.out.println("createCar->prettyRoxel?:" + prettyRoxel);
+            iterationCnt++;
+        }
+        
+        if (iterationCnt >= 100) {
+            System.err.println("Found no Space for new Car.");
+            return;
         }
         // create car
         new Car(id, pfWidth(), pfHeight(), xPos, yPos, horizontal);
+    }
+
+    private boolean isRoxelAvailable(int x, int y) {
+        CompoundId nextId = new CompoundId(x, y);
+        // Create Matching Template
+        Roxel template = new Roxel();
+        template.setId(nextId);
+        template.setX(x);
+        template.setY(y);
+        template.setState("NOCAR");
+        return tuplespace.read(template) != null;
     }
 
     int carcnt = 0;
@@ -359,18 +382,6 @@ public class CarGame extends StdGame {
             }
         }
 
-        /** calculate current roxel x coordinate from pixel x */
-        private int roxelX(double x) {
-            return (int) (x) / TILE_SIZE
-                    % (conf.getBlocksX() * conf.getBlockRoxelLength());
-        }
-
-        /** calculate current roxel y coordinate from pixel y */
-        private int roxelY(double y) {
-            return (int) (y) / TILE_SIZE
-                    % (conf.getBlocksY() * conf.getBlockRoxelLength());
-        }
-
         private void enterRoxel(int x, int y) {
             CompoundId nextId = new CompoundId(x, y);
             // Create Matching Template
@@ -389,6 +400,8 @@ public class CarGame extends StdGame {
                     next.setState("CAR");
                 }
                 tuplespace.write(next);
+            } else {
+
             }
         }
 
@@ -446,6 +459,18 @@ public class CarGame extends StdGame {
             leaveRoxel(currentRoxelX, currentRoxelY);
             leaveRoxel(nextRoxelX, nextRoxelY);
         }
+    }
+
+    /** calculate current roxel x coordinate from pixel x */
+    private int roxelX(double x) {
+        return (int) (x) / TILE_SIZE
+                % (conf.getBlocksX() * conf.getBlockRoxelLength());
+    }
+
+    /** calculate current roxel y coordinate from pixel y */
+    private int roxelY(double y) {
+        return (int) (y) / TILE_SIZE
+                % (conf.getBlocksY() * conf.getBlockRoxelLength());
     }
 
 }

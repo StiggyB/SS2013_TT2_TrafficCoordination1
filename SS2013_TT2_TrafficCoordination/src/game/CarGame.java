@@ -62,6 +62,7 @@ public class CarGame extends StdGame {
      * application if no Configuration was found after several retries.
      */
     private void connect() {
+        
         tuplespace = DataGridConnectionUtility.getSpace("streetGrid", 1, 1);
         int retryCounter = 0;
         System.out.print("Getting Configuration");
@@ -194,7 +195,7 @@ public class CarGame extends StdGame {
         boolean horizontal;
         int waitcounter = 0;
         public double maxspeed = 3;
-        public double minspeed = 0.5;
+        public double minspeed = 1;
         int nextRoxelX, nextRoxelY;
 
         JGColor textcolor = JGColor.white;
@@ -298,7 +299,6 @@ public class CarGame extends StdGame {
             // // check if we're actually hitting somebody
             // if (currentRoxelX == opponent.curr)
             textcolor = JGColor.red;
-            playAudio("crash");
             // }
             //
             if ((xspeed != 0 && opponent.currentRoxelX > currentRoxelX && opponent.currentRoxelY >= currentRoxelY)
@@ -321,12 +321,14 @@ public class CarGame extends StdGame {
             
 
             if (next != null) {
-                System.out.println(getName() + " has to brake");
-                return false;
-            } else {
-//                System.out.println("Tuple was NULL");
+                if (next.getState().equals("Car")) {
+                    System.out.println(getName() + " has to brake");
+                    return false;
+                } else {
+                    return true;
+                }
             }
-            return true;
+            return false;
         }
 
         /**
@@ -377,7 +379,7 @@ public class CarGame extends StdGame {
             template.setState("NOCAR");
 
             // Aquire next Roxel
-            Roxel next = tuplespace.take(template,1000);
+            Roxel next = tuplespace.take(template);
             System.out.println(getName() + " InitialRoxel: " + nextId + " - "
                     + next);
             if (next != null) {

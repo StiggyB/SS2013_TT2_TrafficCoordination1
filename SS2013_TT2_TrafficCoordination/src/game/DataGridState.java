@@ -16,7 +16,7 @@ import jgame.platform.StdGame;
 
 public class DataGridState extends StdGame {
 
-    private static final int TILESIZE = 64;
+    private static final int TILESIZE = 256;
 
     /**
      * 

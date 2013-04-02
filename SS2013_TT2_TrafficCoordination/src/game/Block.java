@@ -2,8 +2,6 @@ package game;
 
 import org.openspaces.core.GigaSpace;
 
-import spaces.Roxel;
-
 /**
  * One Crossing
  */

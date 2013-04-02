@@ -1,36 +1,37 @@
 package game;
 
+import jgame.JGColor;
+import jgame.JGObject;
+import jgame.JGPoint;
+import jgame.platform.StdGame;
+
 import org.openspaces.core.GigaSpace;
 
 import spaces.CompoundId;
 import spaces.Configuration;
 import spaces.DataGridConnectionUtility;
 import spaces.Roxel;
-import jgame.JGColor;
-import jgame.JGObject;
-import jgame.JGPoint;
-import jgame.platform.StdGame;
 
 public class CarGame extends StdGame {
     private static final long serialVersionUID = -6899853102902331390L;
     /**
      * Pixel length of textures
      */
-    private static final int TILE_SIZE = 64;
+    private static final int  TILE_SIZE        = 64;
     /**
      * side ratio for window sizing
      */
-    private static double ratio = 3;
+    private static double     ratio            = 3;
     /**
      * Crossing array
      */
-    static Block[][] blocks;
+    static Block[][]          blocks;
 
-    GigaSpace tuplespace;
+    GigaSpace                 tuplespace;
 
-    Configuration conf = null;
+    Configuration             conf             = null;
 
-    boolean showGrid = false;
+    boolean                   showGrid         = false;
 
     /**
      * @param args
@@ -62,7 +63,7 @@ public class CarGame extends StdGame {
      * application if no Configuration was found after several retries.
      */
     private void connect() {
-        
+
         tuplespace = DataGridConnectionUtility.getSpace("streetGrid", 1, 1);
         int retryCounter = 0;
         System.out.print("Getting Configuration");
@@ -172,7 +173,8 @@ public class CarGame extends StdGame {
     public void paintFrame() {
         if (showGrid) {
             setColor(JGColor.black);
-            for (int i = 0; i < conf.getBlocksY() * conf.getBlockRoxelLength(); i++) {
+            for (int i = 0; i < conf.getBlocksY()
+                    * conf.getBlockRoxelLength(); i++) {
                 drawLine(0, i * TILE_SIZE, pfWidth(), i * TILE_SIZE);
                 for (int j = 0; j < conf.getBlocksX()
                         * conf.getBlockRoxelLength(); j++) {
@@ -182,25 +184,25 @@ public class CarGame extends StdGame {
         }
     }
 
-    public void destroy(){
+    public void destroy() {
         removeObjects("car", 0);
     }
-    
+
     class Car extends JGObject {
-        int id;
-        int screenWidth;
-        int screenHeight;
-        int currentRoxelX;
-        int currentRoxelY;
-        boolean horizontal;
-        int waitcounter = 0;
-        public double maxspeed = 3;
-        public double minspeed = 1;
-        int nextRoxelX, nextRoxelY;
+        int           id;
+        int           screenWidth;
+        int           screenHeight;
+        int           currentRoxelX;
+        int           currentRoxelY;
+        boolean       horizontal;
+        int           waitcounter = 0;
+        public double maxspeed    = 3;
+        public double minspeed    = 1;
+        int           nextRoxelX, nextRoxelY;
 
-        JGColor textcolor = JGColor.white;
+        JGColor       textcolor   = JGColor.white;
 
-        CompoundId actRoxelID;
+        CompoundId    actRoxelID;
 
         Car(int id, int screenWidth, int screenHeight, int startposx,
                 int startposy, boolean horizontal) {
@@ -210,8 +212,8 @@ public class CarGame extends StdGame {
             this.screenWidth = screenWidth;
             this.screenHeight = screenHeight;
             this.currentRoxelX = roxelX(x);
-            this.currentRoxelY = roxelY((horizontal ? startposy + TILE_SIZE / 2
-                    : startposy));
+            this.currentRoxelY = roxelY((horizontal ? startposy + TILE_SIZE
+                    / 2 : startposy));
             this.horizontal = horizontal;
             enterRoxel(currentRoxelX, currentRoxelY);
 
@@ -285,8 +287,9 @@ public class CarGame extends StdGame {
         public void paint() {
             setColor(textcolor);
 
-            drawString(getName() + ": " + currentRoxelX + "_" + currentRoxelY,
-                    x + TILE_SIZE / 2, y + TILE_SIZE / 10, 0);
+            drawString(
+                    getName() + ": " + currentRoxelX + "_" + currentRoxelY, x
+                            + TILE_SIZE / 2, y + TILE_SIZE / 10, 0);
             setColor(JGColor.blue);
 
             drawRect(x, y, 5, 5, true, false);
@@ -312,13 +315,12 @@ public class CarGame extends StdGame {
             }
         }
 
-        private boolean isNextRoxelFree(double nextX, double nextY) {
-            CompoundId nextId = new CompoundId(roxelX(nextX), roxelY(nextY));
+        private boolean isNextRoxelFree(int nextX, int nextY) {
+            CompoundId nextId = new CompoundId(nextX, nextY);
             Roxel template = new Roxel();
             template.setId(nextId);
 
             Roxel next = tuplespace.read(template);
-            
 
             if (next != null) {
                 if (next.getState().equals("Car")) {
@@ -439,7 +441,7 @@ public class CarGame extends StdGame {
                 tuplespace.write(act);
             }
         }
-        
+
         public void destroy() {
             leaveRoxel(currentRoxelX, currentRoxelY);
             leaveRoxel(nextRoxelX, nextRoxelY);

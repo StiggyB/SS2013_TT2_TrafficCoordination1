@@ -16,7 +16,7 @@ public class Configurator {
         System.out.println("Connecting to data grid.");
         tuplespace = DataGridConnectionUtility.getSpace("streetGrid", 1, 1);
 
-        Configuration c = new Configuration("game1", 10, 1, 1, 3);
+        Configuration c = new Configuration("game1", 10, 8, 4, 3);
 
         System.out.println("Check for existing configuration.");
         Configuration existingConf = tuplespace.readById(Configuration.class,

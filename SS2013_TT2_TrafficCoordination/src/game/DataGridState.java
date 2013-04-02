@@ -1,22 +1,21 @@
 package game;
 
-import org.openspaces.core.GigaSpace;
+import jgame.JGColor;
+import jgame.JGFont;
+import jgame.JGPoint;
+import jgame.platform.StdGame;
 
-import com.j_spaces.core.client.SQLQuery;
+import org.openspaces.core.GigaSpace;
 
 import spaces.Configuration;
 import spaces.DataGridConnectionUtility;
 import spaces.Roxel;
-import jgame.JGColor;
-import jgame.JGFont;
-import jgame.JGObject;
-import jgame.JGPoint;
-import jgame.platform.JGEngine;
-import jgame.platform.StdGame;
+
+import com.j_spaces.core.client.SQLQuery;
 
 public class DataGridState extends StdGame {
 
-    private static final int TILESIZE = 256;
+    private static final int TILESIZE = 64;
 
     /**
      * 

@@ -2,27 +2,38 @@ package spaces;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
+import com.gigaspaces.annotation.pojo.SpaceRouting;
 
-@SpaceClass
+//@SpaceClass
 public class Configuration {
     String id;
-    float roxelLength;
-    int blocksX;
-    int blocksY;
-    int blockRoxelLength;
+    Float roxelLength;
+    Integer blocksX;
+    Integer blocksY;
+    Integer blockRoxelLength;
+    Boolean processed;
 
     public Configuration() {
     }
 
-    public Configuration(String id, float roxelLength, int blocksX, int blocksY,
-            int blockRoxelLength) {
+    public Configuration(String id, float roxelLength, int blocksX,
+            int blocksY, int blockRoxelLength, boolean processed) {
         this.roxelLength = roxelLength;
         this.blocksX = blocksX;
         this.blocksY = blocksY;
         this.blockRoxelLength = blockRoxelLength;
         this.id = id;
+        this.processed = processed;
     }
 
+    public Boolean getProcessed() {
+        return processed;
+    }
+
+    public void setProcessed(Boolean processed) {
+        this.processed = processed;
+    }
+    @SpaceRouting
     @SpaceId(autoGenerate = true)
     public String getId() {
         return id;
@@ -32,40 +43,41 @@ public class Configuration {
         this.id = id;
     }
 
-    public float getRoxelLength() {
+    public Float getRoxelLength() {
         return roxelLength;
     }
 
-    public void setRoxelLength(float roxelLength) {
+    public void setRoxelLength(Float roxelLength) {
         this.roxelLength = roxelLength;
     }
 
-    public int getBlocksX() {
+    public Integer getBlocksX() {
         return blocksX;
     }
 
-    public void setBlocksX(int blocksX) {
+    public void setBlocksX(Integer blocksX) {
         this.blocksX = blocksX;
     }
 
-    public int getBlocksY() {
+    public Integer getBlocksY() {
         return blocksY;
     }
 
-    public void setBlocksY(int blocksY) {
+    public void setBlocksY(Integer blocksY) {
         this.blocksY = blocksY;
     }
 
-    public int getBlockRoxelLength() {
+    public Integer getBlockRoxelLength() {
         return blockRoxelLength;
     }
 
-    public void setBlockRoxelLength(int blockRoxelLength) {
+    public void setBlockRoxelLength(Integer blockRoxelLength) {
         this.blockRoxelLength = blockRoxelLength;
     }
 
     public String toString() {
         return id + "_" + roxelLength + "_" + blocksX + "_" + blocksY + "_"
-                + blockRoxelLength;
+                + blockRoxelLength + "_"+processed;
     }
+
 }

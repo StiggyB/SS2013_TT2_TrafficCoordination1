@@ -46,6 +46,7 @@
         The processor bean
     -->
     <bean id="gridCreatorProcessor" class="services.gridcreator.GridCreator"/>
+    <bean id="gridConsolidatorProcessor" class="services.gridconsolidator.GridConsolidator"/>
 
     <!--
         A Polling Container bean that performs repeated take operations from the space of objects matching a defined template.
@@ -66,6 +67,18 @@
     <os-events:listener>
         <os-events:annotation-adapter>
             <os-events:delegate ref="gridCreatorProcessor"/>
+        </os-events:annotation-adapter>
+    </os-events:listener>
+</os-events:polling-container>
+    <os-events:polling-container id="gridConsolidatorProcessorPollingEventContainer" giga-space="gigaSpace">
+    <os-events:tx-support tx-manager="transactionManager"/>
+    <os-core:template>
+        <bean class="spaces.Roxel">
+        </bean>
+    </os-core:template>
+    <os-events:listener>
+        <os-events:annotation-adapter>
+            <os-events:delegate ref="gridConsolidatorProcessor"/>
         </os-events:annotation-adapter>
     </os-events:listener>
 </os-events:polling-container>

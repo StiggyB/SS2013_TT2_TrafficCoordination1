@@ -74,6 +74,7 @@
     <os-events:tx-support tx-manager="transactionManager"/>
     <os-core:template>
         <bean class="spaces.Roxel">
+        	<property name="stateChanged" value="true"></property>
         </bean>
     </os-core:template>
     <os-events:listener>

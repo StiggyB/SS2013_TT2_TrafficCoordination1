@@ -29,6 +29,7 @@ public class GridConsolidator {
     @EventTemplate
     public Roxel unprocessedDataTemplate() {
         Roxel data = new Roxel();
+        data.setStateChanged(true);
         return data;
     }
 
@@ -36,19 +37,26 @@ public class GridConsolidator {
     public Roxel processMessage(Roxel msg) {
         logger.info("GridConsolidator PROCESSING : " + msg);
         CompressedRoxelGrid template = new CompressedRoxelGrid();
-        template.setId("game1");
-        template.setOccupiedRoxels(new ArrayList<Boolean>(0));
-        
+        template.setId("game1_consolidated_grid");
+        template.setOccupiedRoxels(null);
+        template.setxSize(null);
+        template.setySize(null);
+
         CompressedRoxelGrid crg = gigaSpace.take(template);
         // FIXME: ^^^ returns null, therefore crashes...
-        if (msg.getState().equals("NOCAR")
-                && crg.getOccupiedRoxels(msg.getX(), msg.getY()) == true) {
-            crg.setOccupiedRoxels(msg.getX(), msg.getY(), false);
-        } else if (msg.getState().equals("CAR")
-                && crg.getOccupiedRoxels(msg.getX(), msg.getY()) == false) {
-            crg.setOccupiedRoxels(msg.getX(), msg.getY(), true);
+        if (crg != null) {
+            if (msg.getState().equals("NOCAR")
+                    && crg.getOccupiedRoxel(msg.getX(), msg.getY())
+                            .equals(true)) {
+                crg.setOccupiedRoxel(msg.getX(), msg.getY(), false);
+            } else if (msg.getState().equals("CAR")
+                    && crg.getOccupiedRoxel(msg.getX(), msg.getY()).equals(
+                            false)) {
+                crg.setOccupiedRoxel(msg.getX(), msg.getY(), true);
+            }
+            gigaSpace.write(crg);
         }
-        gigaSpace.write(crg);
+        msg.setStateChanged(false);
         return msg;
     }
 

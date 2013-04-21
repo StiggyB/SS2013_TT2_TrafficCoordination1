@@ -6,6 +6,10 @@ import jgame.JGPoint;
 import jgame.platform.StdGame;
 
 import org.openspaces.core.GigaSpace;
+import org.openspaces.core.GigaSpaceConfigurer;
+import org.openspaces.core.space.UrlSpaceConfigurer;
+
+import com.j_spaces.core.IJSpace;
 
 import spaces.CompoundId;
 import spaces.Configuration;
@@ -64,7 +68,19 @@ public class CarGame extends StdGame {
      */
     private void connect() {
 
-        tuplespace = DataGridConnectionUtility.getSpace("streetGrid", 1, 1);
+//        tuplespace = DataGridConnectionUtility.getSpace("streetGrid", 1, 1);
+        System.out.println("Connecting to data grid.");
+        // connect to the space using its URL
+        IJSpace space = new UrlSpaceConfigurer("jini://*/*/streetGrid").space();
+        if (space == null) {
+            System.out.println("IJSpace == null !!!");
+        }
+        // use gigaspace wrapper for simpler API
+        this.tuplespace = new GigaSpaceConfigurer(space).gigaSpace();
+        if (tuplespace == null) {
+            System.out.println("tuplespace == null !!!");
+        }
+        
         int retryCounter = 0;
         System.out.print("Getting Configuration");
         while (conf == null) {
@@ -160,14 +176,16 @@ public class CarGame extends StdGame {
     }
 
     private boolean isRoxelAvailable(int x, int y) {
+        System.out.println("isAvail: " + x + " " + y);
         CompoundId nextId = new CompoundId(x, y);
-        // Create Matching Template
-        Roxel template = new Roxel();
-        template.setId(nextId);
-        template.setX(x);
-        template.setY(y);
-        template.setState("NOCAR");
-        return tuplespace.read(template) != null;
+//        // Create Matching Template
+//        Roxel template = new Roxel();
+//        template.setId(nextId);
+//        template.setX(x);
+//        template.setY(y);
+//        template.setState("NOCAR");
+//        return tuplespace.read(template) != null;
+        return tuplespace.readById(Roxel.class, nextId) != null;
     }
 
     int carcnt = 0;
@@ -390,6 +408,7 @@ public class CarGame extends StdGame {
             template.setX(x);
             template.setY(y);
             template.setState("NOCAR");
+            template.setStateChanged(null);
 
             // Aquire next Roxel
             Roxel next = tuplespace.take(template);
@@ -416,6 +435,7 @@ public class CarGame extends StdGame {
             template.setX(x);
             template.setY(y);
             template.setState("NOCAR");
+            template.setStateChanged(null);
 
             // Aquire next Roxel
             Roxel next = tuplespace.take(template);
@@ -443,6 +463,7 @@ public class CarGame extends StdGame {
             template.setX(currentRoxelX);
             template.setY(currentRoxelY);
             template.setState("CAR");
+            template.setStateChanged(null);
             Roxel act = tuplespace.take(template);
 
             if (act != null) {

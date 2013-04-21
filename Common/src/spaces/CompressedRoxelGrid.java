@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
+import com.gigaspaces.annotation.pojo.SpaceRouting;
 
 @SpaceClass
 public class CompressedRoxelGrid {
@@ -24,16 +25,18 @@ public class CompressedRoxelGrid {
         this.xSize = xSize;
         this.ySize = ySize;
         this.occupiedRoxels = new ArrayList<Boolean>(xSize * ySize);
-        for (int i = 0; i < occupiedRoxels.size(); i++) {
-            this.occupiedRoxels.set(i, new Boolean(false));
+        for (int i = 0; i < (xSize * ySize); i++) {
+            this.occupiedRoxels.add(i, new Boolean(false));
         }
+        System.out.println(occupiedRoxels.toString());
     }
 
     public String getId() {
         return id;
     }
 
-    @SpaceId(autoGenerate = false)
+    @SpaceRouting
+    @SpaceId(autoGenerate = true)
     public void setId(String id) {
         this.id = id;
     }
@@ -46,7 +49,14 @@ public class CompressedRoxelGrid {
         this.occupiedRoxels = occupiedRoxels;
     }
 
-    public void setOccupiedRoxels(Integer x, Integer y, Boolean state) {
+    public Boolean getOccupiedRoxel(Integer x, Integer y) {
+        return occupiedRoxels.get(y * xSize + x);
+    }
+    
+    public void setOccupiedRoxel(Integer x, Integer y, Boolean state) {
+        if (occupiedRoxels == null) {
+            this.occupiedRoxels = new ArrayList<Boolean>(xSize * ySize);
+        }
         this.occupiedRoxels.set(y * xSize + x, state);
     }
 
@@ -74,7 +84,5 @@ public class CompressedRoxelGrid {
         return id + "_" + s;
     }
 
-    public boolean getOccupiedRoxels(Integer x, Integer y) {
-        return occupiedRoxels.get(y * xSize + x);
-    }
+
 }

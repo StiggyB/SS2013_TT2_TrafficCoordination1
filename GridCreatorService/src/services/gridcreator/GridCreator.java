@@ -45,9 +45,10 @@ public class GridCreator {
     }
 
     private void createCompressedGrid(Configuration c) {
-        CompressedRoxelGrid crg = new CompressedRoxelGrid(c.getId(),
+        CompressedRoxelGrid crg = new CompressedRoxelGrid("game1_consolidated_grid",
                 c.getBlockRoxelLength() * c.getBlocksX(),
                 c.getBlockRoxelLength() * c.getBlocksY());
+        logger.info("Created CompressedRoxelGrid: " + crg.toString());
         gigaSpace.write(crg);
     }
 

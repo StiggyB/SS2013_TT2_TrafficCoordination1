@@ -2,6 +2,7 @@ package spaces;
 
 import com.gigaspaces.annotation.pojo.SpaceClass;
 import com.gigaspaces.annotation.pojo.SpaceId;
+import com.gigaspaces.annotation.pojo.SpaceRouting;
 
 @SpaceClass
 public class Roxel {
@@ -10,6 +11,7 @@ public class Roxel {
     private Integer y;
     private String direction;
     private String state;
+    private Boolean stateChanged;
 
     public Roxel() {
     }
@@ -23,9 +25,11 @@ public class Roxel {
         if (state.equals("CAR") || state.equals("NOCAR"))
             this.state = state;
 
+        this.stateChanged = true;
         id = new CompoundId(x, y);
     }
 
+    @SpaceRouting
     @SpaceId(autoGenerate = false)
     public CompoundId getId() {
         return id;
@@ -66,12 +70,23 @@ public class Roxel {
     }
 
     public void setState(String state) {
-        if (state.equals("CAR") || state.equals("NOCAR"))
+        if (state.equals("CAR") || state.equals("NOCAR")) {
+            this.stateChanged = true;
             this.state = state;
+        }
+    }
+
+    public Boolean getStateChanged() {
+        return stateChanged;
+    }
+
+    public void setStateChanged(Boolean stateChanged) {
+        this.stateChanged = stateChanged;
     }
 
     public String toString() {
-        return id + "_" + x + "_" + y + "_" + direction + "_" + state;
+        return id + "_" + x + "_" + y + "_" + direction + "_" + state + "_"
+                + stateChanged;
     }
 
 }

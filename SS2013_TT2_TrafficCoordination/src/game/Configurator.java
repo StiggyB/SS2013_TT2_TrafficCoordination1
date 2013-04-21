@@ -46,7 +46,7 @@ public class Configurator {
     }
 
     private void createConfiguration() {
-        Configuration c = new Configuration("game1", 10, 8, 4, 5, false);
+        Configuration c = new Configuration("game1", 10, 1, 1, 3, false);
 
         System.out.println("Check for existing configuration.");
         Configuration existingConf = tuplespace.readById(Configuration.class,
@@ -60,6 +60,7 @@ public class Configurator {
             System.out.println("Configuration existing: "
                     + existingConf.toString());
             existingConf = tuplespace.takeById(Configuration.class, "game1");
+            existingConf.setProcessed(false);
             tuplespace.write(existingConf);
             // createRoxels(c);
         }

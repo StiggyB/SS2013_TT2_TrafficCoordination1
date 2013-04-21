@@ -34,7 +34,7 @@ public class GridCreator {
     @SpaceDataEvent
     public Configuration processMessage(Configuration msg) {
         logger.info("GridCreator PROCESSING : " + msg);
-        createCompressedGrid(msg);
+        createCompressedGrid(msg, "game1_consolidated_grid");
         createGrid(msg);
         msg.setProcessed(true);
         return msg;
@@ -44,10 +44,11 @@ public class GridCreator {
         logger.info("GridCreator instantiated...");
     }
 
-    private void createCompressedGrid(Configuration c) {
-        CompressedRoxelGrid crg = new CompressedRoxelGrid("game1_consolidated_grid",
+    private void createCompressedGrid(Configuration c, String id) {
+        CompressedRoxelGrid crg = new CompressedRoxelGrid(id,
                 c.getBlockRoxelLength() * c.getBlocksX(),
                 c.getBlockRoxelLength() * c.getBlocksY());
+        c.setCompGridId(crg.getId());
         logger.info("Created CompressedRoxelGrid: " + crg.toString());
         gigaSpace.write(crg);
     }

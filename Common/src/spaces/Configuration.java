@@ -12,6 +12,7 @@ public class Configuration {
     Integer blocksY;
     Integer blockRoxelLength;
     Boolean processed;
+    String compGridId;
 
     public Configuration() {
     }
@@ -33,6 +34,7 @@ public class Configuration {
     public void setProcessed(Boolean processed) {
         this.processed = processed;
     }
+
     @SpaceRouting
     @SpaceId(autoGenerate = true)
     public String getId() {
@@ -75,9 +77,17 @@ public class Configuration {
         this.blockRoxelLength = blockRoxelLength;
     }
 
+    public String getCompGridId() {
+        return compGridId;
+    }
+
+    public void setCompGridId(String compGridId) {
+        this.compGridId = compGridId;
+    }
+
     public String toString() {
         return id + "_" + roxelLength + "_" + blocksX + "_" + blocksY + "_"
-                + blockRoxelLength + "_"+processed;
+                + blockRoxelLength + "_" + processed + "_" + compGridId;
     }
 
 }

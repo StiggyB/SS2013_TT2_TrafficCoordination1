@@ -1,5 +1,7 @@
 package game;
 
+import java.util.ArrayList;
+
 import jgame.JGColor;
 import jgame.JGFont;
 import jgame.JGPoint;
@@ -7,6 +9,7 @@ import jgame.platform.StdGame;
 
 import org.openspaces.core.GigaSpace;
 
+import spaces.CompressedRoxelGrid;
 import spaces.Configuration;
 import spaces.DataGridConnectionUtility;
 import spaces.Roxel;
@@ -15,7 +18,7 @@ import com.j_spaces.core.client.SQLQuery;
 
 public class DataGridState extends StdGame {
 
-    private static final int TILESIZE = 64;
+    private static final int TILESIZE = 256;
 
     /**
      * 
@@ -62,7 +65,7 @@ public class DataGridState extends StdGame {
         eastCarsQuery = new SQLQuery<Roxel>(Roxel.class, eastCarsQryStr);
         crossingCarsQuery = new SQLQuery<Roxel>(Roxel.class, crossCarsQryStr);
 
-        initEngine(size.x * conf.getBlocksX(), size.y * conf.getBlocksY()+3);
+        initEngine(size.x * conf.getBlocksX(), size.y * conf.getBlocksY());
     }
 
     /**
@@ -93,7 +96,7 @@ public class DataGridState extends StdGame {
     @Override
     public void initCanvas() {
         setCanvasSettings(conf.getBlockRoxelLength() * conf.getBlocksX(),
-                conf.getBlockRoxelLength() * conf.getBlocksY() + 3, TILESIZE,
+                conf.getBlockRoxelLength() * conf.getBlocksY(), TILESIZE,
                 TILESIZE, null, JGColor.gray, null);
     }
 
@@ -104,34 +107,46 @@ public class DataGridState extends StdGame {
 
     }
 
-    Roxel[] carRoxels;
-    Roxel[] noCarRoxels;
+    // Roxel[] carRoxels;
+    // Roxel[] noCarRoxels;
     int framecnt;
-    float south_util;
-    float east_util;
-    float crossing_util;
+    // float south_util;
+    // float east_util;
+    // float crossing_util;
+
+    CompressedRoxelGrid roxels;
 
     public void doFrame() {
         if (framecnt > 2) {
-            Roxel[] tmp;
-            carRoxels = tuplespace.readMultiple(carsQuery);
-            noCarRoxels = tuplespace.readMultiple(noCarsQuery);
-            tmp = tuplespace.readMultiple(southQuery);
-            float southRoxels = tmp.length;
-            tmp = tuplespace.readMultiple(eastQuery);
-            float eastRoxels = tmp.length;
-            tmp = tuplespace.readMultiple(southCarsQuery);
-            float southCarRoxels = tmp.length;
-            tmp = tuplespace.readMultiple(eastCarsQuery);
-            float eastCarsRoxels = tmp.length;
-            tmp = tuplespace.readMultiple(crossingQuery);
-            float crossRoxels = tmp.length;
-            tmp = tuplespace.readMultiple(crossingCarsQuery);
-            float crossCarsRoxels = tmp.length;
+            // Roxel[] tmp;
+            CompressedRoxelGrid template = new CompressedRoxelGrid();
+            template.setId(conf.getCompGridId());
+            template.setOccupiedRoxels(null);
+            template.setxSize(null);
+            template.setySize(null);
 
-            south_util = southCarRoxels / southRoxels * 100;
-            east_util = eastCarsRoxels / eastRoxels * 100;
-            crossing_util = crossCarsRoxels / crossRoxels * 100;
+            roxels = tuplespace.read(template);
+
+            // System.out.println(roxels.toString());
+
+            // carRoxels = tuplespace.readMultiple(carsQuery);
+            // noCarRoxels = tuplespace.readMultiple(noCarsQuery);
+            // tmp = tuplespace.readMultiple(southQuery);
+            // float southRoxels = tmp.length;
+            // tmp = tuplespace.readMultiple(eastQuery);
+            // float eastRoxels = tmp.length;
+            // tmp = tuplespace.readMultiple(southCarsQuery);
+            // float southCarRoxels = tmp.length;
+            // tmp = tuplespace.readMultiple(eastCarsQuery);
+            // float eastCarsRoxels = tmp.length;
+            // tmp = tuplespace.readMultiple(crossingQuery);
+            // float crossRoxels = tmp.length;
+            // tmp = tuplespace.readMultiple(crossingCarsQuery);
+            // float crossCarsRoxels = tmp.length;
+            //
+            // south_util = southCarRoxels / southRoxels * 100;
+            // east_util = eastCarsRoxels / eastRoxels * 100;
+            // crossing_util = crossCarsRoxels / crossRoxels * 100;
             framecnt = 0;
         } else {
             framecnt++;
@@ -140,31 +155,48 @@ public class DataGridState extends StdGame {
     }
 
     public void paintFrame() {
-        if (carRoxels != null) {
-            for (Roxel r : carRoxels) {
-                setColor(JGColor.red);
-                drawRect(r.getX() * TILESIZE, r.getY() * TILESIZE, TILESIZE,
-                        TILESIZE, true, false);
+        if (roxels != null) {
+            ArrayList<Boolean> notfree = roxels.getOccupiedRoxels();
+
+            for (int i = 0; i < notfree.size(); i++) {
+                int x = i % (conf.getBlocksX() * conf.getBlockRoxelLength());
+                int y = i / (conf.getBlocksX() * conf.getBlockRoxelLength());
+                if (notfree.get(i)) {
+                    setColor(JGColor.red);
+                    drawRect(x * TILESIZE, y * TILESIZE, TILESIZE, TILESIZE,
+                            true, false);
+                } else {
+                    setColor(JGColor.white);
+                    drawRect(x * TILESIZE, y * TILESIZE, TILESIZE, TILESIZE,
+                            true, false);
+                }
             }
         }
-        if (noCarRoxels != null) {
-            for (Roxel r : noCarRoxels) {
-                setColor(JGColor.white);
-                drawRect(r.getX() * TILESIZE, r.getY() * TILESIZE, TILESIZE,
-                        TILESIZE, true, false);
-            }
-        }
-        setFont(new JGFont(null, JGFont.PLAIN, 50));
-        drawString("South street utilization: " + south_util + "%", 10,
-                conf.getBlocksY() * conf.getBlockRoxelLength() * TILESIZE + 10,
-                -1);
-        drawString("East street utilization: " + east_util + "%", 10,
-                conf.getBlocksY() * conf.getBlockRoxelLength() * TILESIZE + 70,
-                -1);
-        drawString(
-                "Crossing utilization: " + crossing_util + "%",
-                10,
-                conf.getBlocksY() * conf.getBlockRoxelLength() * TILESIZE + 130,
-                -1);
+        // if (carRoxels != null) {
+        // for (Roxel r : carRoxels) {
+        // setColor(JGColor.red);
+        // drawRect(r.getX() * TILESIZE, r.getY() * TILESIZE, TILESIZE,
+        // TILESIZE, true, false);
+        // }
+        // }
+        // if (noCarRoxels != null) {
+        // for (Roxel r : noCarRoxels) {
+        // setColor(JGColor.white);
+        // drawRect(r.getX() * TILESIZE, r.getY() * TILESIZE, TILESIZE,
+        // TILESIZE, true, false);
+        // }
+        // }
+        // setFont(new JGFont(null, JGFont.PLAIN, 50));
+        // drawString("South street utilization: " + south_util + "%", 10,
+        // conf.getBlocksY() * conf.getBlockRoxelLength() * TILESIZE + 10,
+        // -1);
+        // drawString("East street utilization: " + east_util + "%", 10,
+        // conf.getBlocksY() * conf.getBlockRoxelLength() * TILESIZE + 70,
+        // -1);
+        // drawString(
+        // "Crossing utilization: " + crossing_util + "%",
+        // 10,
+        // conf.getBlocksY() * conf.getBlockRoxelLength() * TILESIZE + 130,
+        // -1);
     }
 }
